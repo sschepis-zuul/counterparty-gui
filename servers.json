@@ -1,6 +1,6 @@
 [{
-    "connect": "counterwallet.io",
+    "connect": "localhost",
     "user": "rpc",
-    "password": "pass",
+    "password": "p",
     "ssl": false
 }]

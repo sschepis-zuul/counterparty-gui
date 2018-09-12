@@ -86,7 +86,7 @@
     </message>
     <message>
         <location filename="../index.qml" line="164"/>
-        <source>Transaction list not available for BTC</source>
+        <source>Transaction list not available for GZR</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

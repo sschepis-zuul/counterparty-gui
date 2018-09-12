@@ -11,7 +11,7 @@ Rectangle {
     // init callback
     function init() {
         // get balances for addresses in the wallet
-        var wallet = xcpApi.call({'method': 'wallet', 'params': {}});
+        var wallet = zulApi.call({'method': 'wallet', 'params': {}});
         var menu = {
             'groupLabel': qsTr('Wallet'),
             'items': []
@@ -25,7 +25,7 @@ Rectangle {
             }
             var amount = Number(wallet['assets'][asset]).toFixed(2)
             var label = assetName + ' <font style="color:#888888">[' + amount + ']</font>';
-            if (asset === 'BTC' || asset === 'XCP') {
+            if (asset === 'GZR' || asset === 'ZUL') {
                 menu['items'].unshift({'label': label, 'value': asset});
             } else {
                 menu['items'].push({'label': label, 'value': asset});
@@ -43,13 +43,13 @@ Rectangle {
     function onMenuAction(itemValue) {
         // empty the transactions List
         sendsListComp.listModel.clear()
-        noTxListForBTC.visible = false;
+        noTxListForGZR.visible = false;
 
         // set the current assets
         root.currentAsset = itemValue;
 
         // get balance by address and sends list for the current asset
-        var assetInfo = xcpApi.call({'method': 'asset', 'params': {'asset_name': root.currentAsset}});
+        var assetInfo = zulApi.call({'method': 'asset', 'params': {'asset_name': root.currentAsset}});
         root.currentAssetInfo = assetInfo;
 
         // display the balance
@@ -67,7 +67,7 @@ Rectangle {
         }
         sendFormComp.sources = sources;
 
-        if (root.currentAsset != 'BTC') {
+        if (root.currentAsset != 'GZR') {
             sendsListComp.visible = true;
             // populate the transactions list
             for (var t in assetInfo['sends']) {
@@ -82,7 +82,7 @@ Rectangle {
             }
         } else {
             sendsListComp.visible = false;
-            noTxListForBTC.visible = true;
+            noTxListForGZR.visible = true;
         }
     }
 
@@ -124,13 +124,13 @@ Rectangle {
 
         if (GUI.confirm(qsTr("Confirm send"), confirmMessage)) {
             // Compose transaction
-            var unsigned_hex = xcpApi.call(query);
+            var unsigned_hex = zulApi.call(query);
             if (unsigned_hex) {
                 // Sign transaction
-                var signed_hex = xcpApi.call({'method': 'sign_raw_transaction', 'params': {'tx_hex': unsigned_hex}});
+                var signed_hex = zulApi.call({'method': 'sign_raw_transaction', 'params': {'tx_hex': unsigned_hex}});
                 if (signed_hex) {
                     // Broadcast transaction
-                    var tx_hash = xcpApi.call({'method': 'send_raw_transaction', 'params': {'tx_hex': signed_hex}});
+                    var tx_hash = zulApi.call({'method': 'send_raw_transaction', 'params': {'tx_hex': signed_hex}});
                     // display transaction hash
                     if (tx_hash) {
                         GUI.alert(qsTr("Transaction done"), tx_hash);
@@ -168,8 +168,8 @@ Rectangle {
             anchors.top: sendFormComp.bottom
         }
         Text {
-            id: noTxListForBTC
-            text: qsTr("Transaction list not available for BTC")
+            id: noTxListForGZR
+            text: qsTr("Transaction list not available for GZR")
             anchors.top: sendFormComp.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: 10

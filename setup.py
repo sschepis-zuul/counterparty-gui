@@ -1,26 +1,26 @@
 import sys
 from setuptools import setup, find_packages
-import counterpartygui
+import zuulgui
 
 APP_VERSION = "1.0.0"
 
 required_packages = [
     'appdirs',
-    'counterparty-cli'
+    'zuul-cli'
 ]
 
 setup_options = {
-    'name': counterpartygui.APP_NAME,
-    'version': counterpartygui.APP_VERSION,
-    'author': 'Counterparty Foundation',
-    'author_email': 'support@counterparty.io',
+    'name': zuulgui.APP_NAME,
+    'version': zuulgui.APP_VERSION,
+    'author': 'Zuul Foundation',
+    'author_email': 'support@zuul.io',
     'maintainer': 'Ouziel Slama',
-    'maintainer_email': 'ouziel@counterparty.io',
-    'url': 'http://counterparty.io',
+    'maintainer_email': 'ouziel@zuul.io',
+    'url': 'http://zuul.io',
     'license': 'MIT',
-    'description': 'Counterparty Wallet',
+    'description': 'Zuul Wallet',
     'long_description': '',
-    'keywords': 'counterparty,bitcoin',
+    'keywords': 'zuul,gozer',
     'classifiers': [
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
@@ -35,8 +35,8 @@ setup_options = {
         "Topic :: Office/Business :: Financial",
         "Topic :: System :: Distributed Computing"
     ],
-    'download_url': 'https://github.com/CounterpartyXCP/counterparty-gui/releases/tag/v' + counterpartygui.APP_VERSION,
-    'provides': ['counterpartygui'],
+    'download_url': 'https://github.com/sschepis-zuul/zuul-gui/releases/tag/v' + zuulgui.APP_VERSION,
+    'provides': ['zuulgui'],
     'packages': find_packages(),
     'zip_safe': False,
     'install_requires': required_packages

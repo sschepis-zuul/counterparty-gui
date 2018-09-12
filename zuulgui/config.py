@@ -11,15 +11,15 @@ logger = logging.getLogger(__name__)
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from counterpartylib.lib import config, log
+from zuullib.lib import config, log
 
-from counterpartycli import client, server
-from counterpartycli.util import add_config_arguments
-from counterpartycli.setup import generate_config_files, generate_config_file
+from zuulcli import client, server
+from zuulcli.util import add_config_arguments
+from zuulcli.setup import generate_config_files, generate_config_file
 
-from counterpartygui import tr
+from zuulgui import tr
 
-APP_NAME = 'counterparty-gui'
+APP_NAME = 'zuul-gui'
 APP_VERSION = '1.0.0'
 
 CONFIG_ARGS = client.CONFIG_ARGS + [
@@ -33,7 +33,7 @@ class Config():
         self.initialize()
 
     def initialize(self, openDialog=False):
-        configdir = appdirs.user_config_dir(appauthor=config.XCP_NAME, appname=config.APP_NAME, roaming=True)
+        configdir = appdirs.user_config_dir(appauthor=config.ZUL_NAME, appname=config.APP_NAME, roaming=True)
         configfile = os.path.join(configdir, 'client.conf')
         config_exists = os.path.exists(configfile)
 
@@ -41,10 +41,10 @@ class Config():
             generate_config_file(configfile, client.CONFIG_ARGS)
 
         # Parse command-line arguments.
-        parser = argparse.ArgumentParser(prog=APP_NAME, description=tr('Counterparty CLI for counterparty-server'), add_help=False, conflict_handler='resolve')
+        parser = argparse.ArgumentParser(prog=APP_NAME, description=tr('Zuul CLI for zuul-server'), add_help=False, conflict_handler='resolve')
         parser.add_argument('-h', '--help', dest='help', action='store_true', help=tr('show this help message and exit'))
         parser.add_argument('-V', '--version', action='version', version="{} v{}".format(APP_NAME, APP_VERSION))
-        parser.add_argument('--config-file', help=tr('the location of the counterparty-client configuration file'))
+        parser.add_argument('--config-file', help=tr('the location of the zuul-client configuration file'))
 
         self.args = parser.parse_known_args()[0]
 
@@ -78,10 +78,10 @@ class Config():
             sys.exit()
 
         # Logging
-        logdir = appdirs.user_log_dir(appauthor=config.XCP_NAME, appname=config.APP_NAME)
+        logdir = appdirs.user_log_dir(appauthor=config.ZUL_NAME, appname=config.APP_NAME)
         if not os.path.exists(logdir):
             os.makedirs(logdir, mode=0o755)
-        self.LOG_FILE = os.path.join(logdir, 'counterpartygui.log')
+        self.LOG_FILE = os.path.join(logdir, 'zuulgui.log')
         log.set_up(logger, verbose=self.args.verbose, logfile=self.LOG_FILE)
 
         return True
@@ -111,7 +111,7 @@ class ConfigDialog(QtWidgets.QDialog):
         walletConfigWidget = WalletConfigPage(knownConfig)
         advancedConfigWidget = AdvancedConfigPage(knownConfig)
 
-        tabs.addTab(serverConfigWidget, tr("Counterparty Server"))
+        tabs.addTab(serverConfigWidget, tr("Zuul Server"))
         tabs.addTab(walletConfigWidget, tr("Wallet"))
         tabs.addTab(advancedConfigWidget, tr("Advanced"))
 
@@ -161,11 +161,11 @@ class ServerConfigPage(QtWidgets.QWidget):
             radioButton = QtWidgets.QRadioButton(server['connect'])
             radioButton.setProperty('ssl', server['ssl'] if 'ssl' in server else False)
             radioButton.setProperty('user', server['user'] if 'user' in server else '')
-            radioButton.setProperty('password', server['password'] if 'password' in server else '')
+            radioButton.setProperty('password', server['password'] if 'password' in server else 'p')
             radioButton.setProperty('public', True)
             if newconfig and server['connect'] == self.public_servers[0]['connect']:
                 radioButton.setChecked(True)
-            elif server['connect'] == knownConfig.get('counterparty-rpc-connect'):
+            elif server['connect'] == knownConfig.get('zuul-rpc-connect'):
                 radioButton.setChecked(True)
             self.radioButtonGroup.addButton(radioButton)
             mainLayout.addWidget(radioButton)
@@ -194,42 +194,42 @@ class ServerConfigPage(QtWidgets.QWidget):
         serverLabel = QtWidgets.QLabel(tr('Host'))
         groupBoxLayout.addWidget(serverLabel)
         self.serverTextField = QtWidgets.QLineEdit()
-        self.serverTextField.setToolTip(tr('the hostname or IP of the counterparty JSON-RPC server'))
-        self.serverTextField.setText(knownConfig.get('counterparty-rpc-connect', 'localhost'))
+        self.serverTextField.setToolTip(tr('the hostname or IP of the zuul JSON-RPC server'))
+        self.serverTextField.setText(knownConfig.get('zuul-rpc-connect', 'localhost'))
         groupBoxLayout.addWidget(self.serverTextField)
 
         portLabel = QtWidgets.QLabel(tr('Port'))
         groupBoxLayout.addWidget(portLabel)
         self.portTextField = QtWidgets.QSpinBox()
         self.portTextField.setRange(1, 65535)
-        self.portTextField.setToolTip(tr('the counterparty JSON-RPC port to connect to'))
+        self.portTextField.setToolTip(tr('the zuul JSON-RPC port to connect to'))
         try:
-            self.portTextField.setValue(int(knownConfig.get('counterparty-rpc-port', '4000')))
+            self.portTextField.setValue(int(knownConfig.get('zuul-rpc-port', '12345')))
         except ValueError:
-            self.portTextField.setValue(4000)
+            self.portTextField.setValue(12345)
         groupBoxLayout.addWidget(self.portTextField)
 
         userLabel = QtWidgets.QLabel(tr('User'))
         groupBoxLayout.addWidget(userLabel)
         self.userTextField = QtWidgets.QLineEdit()
-        self.userTextField.setToolTip(tr('the username used to communicate with counterparty over JSON-RPC'))
-        self.userTextField.setText(knownConfig.get('counterparty-rpc-user', 'rpc'))
+        self.userTextField.setToolTip(tr('the username used to communicate with zuul over JSON-RPC'))
+        self.userTextField.setText(knownConfig.get('zuul-rpc-user', 'rpc'))
         groupBoxLayout.addWidget(self.userTextField)
 
         passwordLabel = QtWidgets.QLabel(tr('Password'))
         groupBoxLayout.addWidget(passwordLabel)
         self.passwordTextField = QtWidgets.QLineEdit()
-        self.passwordTextField.setToolTip(tr('the password used to communicate with counterparty over JSON-RPC'))
+        self.passwordTextField.setToolTip(tr('the password used to communicate with zuul over JSON-RPC'))
         self.passwordTextField.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.passwordTextField.setText(knownConfig.get('counterparty-rpc-password', ''))
+        self.passwordTextField.setText(knownConfig.get('zuul-rpc-password', 'p'))
         groupBoxLayout.addWidget(self.passwordTextField)
 
-        self.useSSLCheckbox = QtWidgets.QCheckBox(tr('Use SSL to connect to counterparty'))
-        self.useSSLCheckbox.setChecked(bool(int(knownConfig.get('counterparty-rpc-ssl', '0'))))
+        self.useSSLCheckbox = QtWidgets.QCheckBox(tr('Use SSL to connect to zuul'))
+        self.useSSLCheckbox.setChecked(bool(int(knownConfig.get('zuul-rpc-ssl', '0'))))
         groupBoxLayout.addWidget(self.useSSLCheckbox)
 
-        self.verifySSLCheckbox = QtWidgets.QCheckBox(tr('Verify SSL certificate of counterparty (disallow use of self-signed certificates)'))
-        self.verifySSLCheckbox.setChecked(bool(int(knownConfig.get('counterparty-rpc-ssl-verify', '0'))))
+        self.verifySSLCheckbox = QtWidgets.QCheckBox(tr('Verify SSL certificate of zuul (disallow use of self-signed certificates)'))
+        self.verifySSLCheckbox.setChecked(bool(int(knownConfig.get('zuul-rpc-ssl-verify', '0'))))
         groupBoxLayout.addWidget(self.verifySSLCheckbox)
 
         groupBox.setLayout(groupBoxLayout)
@@ -240,19 +240,19 @@ class ServerConfigPage(QtWidgets.QWidget):
         config = {}
         selectedServerButton = self.radioButtonGroup.checkedButton()
         if not selectedServerButton.property('public'):
-            config['counterparty-rpc-connect'] = self.serverTextField.text()
-            config['counterparty-rpc-port'] = self.portTextField.value()
-            config['counterparty-rpc-user'] = self.userTextField.text()
-            config['counterparty-rpc-password'] = self.passwordTextField.text()
-            config['counterparty-rpc-ssl'] = self.useSSLCheckbox.isChecked()
-            config['counterparty-rpc-ssl-verify'] = self.verifySSLCheckbox.isChecked()
+            config['zuul-rpc-connect'] = self.serverTextField.text()
+            config['zuul-rpc-port'] = self.portTextField.value()
+            config['zuul-rpc-user'] = self.userTextField.text()
+            config['zuul-rpc-password'] = self.passwordTextField.text()
+            config['zuul-rpc-ssl'] = self.useSSLCheckbox.isChecked()
+            config['zuul-rpc-ssl-verify'] = self.verifySSLCheckbox.isChecked()
         else:
-            config['counterparty-rpc-connect'] = selectedServerButton.text()
-            config['counterparty-rpc-port'] = ''
-            config['counterparty-rpc-user'] = selectedServerButton.property('user')
-            config['counterparty-rpc-password'] = selectedServerButton.property('password')
-            config['counterparty-rpc-ssl'] = selectedServerButton.property('ssl')
-            config['counterparty-rpc-ssl-verify'] = True
+            config['zuul-rpc-connect'] = selectedServerButton.text()
+            config['zuul-rpc-port'] = ''
+            config['zuul-rpc-user'] = selectedServerButton.property('user')
+            config['zuul-rpc-password'] = selectedServerButton.property('password')
+            config['zuul-rpc-ssl'] = selectedServerButton.property('ssl')
+            config['zuul-rpc-ssl-verify'] = True
         return config
 
 
@@ -261,8 +261,8 @@ class WalletConfigPage(QtWidgets.QWidget):
         super().__init__(parent)
 
         self.wallets = [
-            (tr('Bitcoin Core'), 'bitcoincore'), 
-            (tr('btcwallet'), 'btcwallet')
+            (tr('Gozer Core'), 'gozercore'), 
+            (tr('gzrwallet'), 'gzrwallet')
         ]
 
         mainLayout = QtWidgets.QVBoxLayout()
@@ -273,7 +273,7 @@ class WalletConfigPage(QtWidgets.QWidget):
         for wallet in self.wallets:
             radioButton = QtWidgets.QRadioButton(wallet[0])
             radioButton.setProperty('name', wallet[1])
-            if wallet[1] == knownConfig.get('wallet-name', 'bitcoincore'):
+            if wallet[1] == knownConfig.get('wallet-name', 'gozercore'):
                 radioButton.setChecked(True)
             self.radioButtonGroup.addButton(radioButton)
             mainLayout.addWidget(radioButton)
@@ -295,16 +295,16 @@ class WalletConfigPage(QtWidgets.QWidget):
         self.portTextField.setRange(1, 65535)
         self.portTextField.setToolTip(tr('the wallet port to connect to'))
         try:
-            self.portTextField.setValue(int(knownConfig.get('wallet-port', '8332')))
+            self.portTextField.setValue(int(knownConfig.get('wallet-port', '28369')))
         except ValueError:
-            self.portTextField.setValue(8332)
+            self.portTextField.setValue(28369)
         groupBoxLayout.addWidget(self.portTextField)
 
         userLabel = QtWidgets.QLabel(tr('User'))
         groupBoxLayout.addWidget(userLabel)
         self.userTextField = QtWidgets.QLineEdit()
         self.userTextField.setToolTip(tr('the username used to communicate with the wallet'))
-        self.userTextField.setText(knownConfig.get('wallet-user', 'bitcoinrpc'))
+        self.userTextField.setText(knownConfig.get('wallet-user', 'gozerrpc'))
         groupBoxLayout.addWidget(self.userTextField)
 
         passwordLabel = QtWidgets.QLabel(tr('Password'))
@@ -312,7 +312,7 @@ class WalletConfigPage(QtWidgets.QWidget):
         self.passwordTextField = QtWidgets.QLineEdit()
         self.passwordTextField.setToolTip(tr('the password used to communicate with the wallet'))
         self.passwordTextField.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.passwordTextField.setText(knownConfig.get('wallet-password', ''))
+        self.passwordTextField.setText(knownConfig.get('wallet-password', 'p'))
         groupBoxLayout.addWidget(self.passwordTextField)
 
         self.useSSLCheckbox = QtWidgets.QCheckBox(tr('Use SSL to connect to wallet'))
@@ -360,7 +360,7 @@ class AdvancedConfigPage(QtWidgets.QWidget):
         self.encoding.addItems(['auto', 'multisig', 'opreturn', 'pubkeyhash'])
         mainLayout.addWidget(self.encoding)
 
-        feePerKbLabel = QtWidgets.QLabel(tr('Fee per kilobyte, in BTC'))
+        feePerKbLabel = QtWidgets.QLabel(tr('Fee per kilobyte, in GZR'))
         mainLayout.addWidget(feePerKbLabel)
         self.feePerKbField = QtWidgets.QDoubleSpinBox()
         self.feePerKbField.setDecimals(8)
@@ -372,7 +372,7 @@ class AdvancedConfigPage(QtWidgets.QWidget):
             self.feePerKbField.setValue(config.DEFAULT_FEE_PER_KB / config.UNIT)
         mainLayout.addWidget(self.feePerKbField)
 
-        regularDustSizeLabel = QtWidgets.QLabel(tr('Value for dust Pay-to-Pubkey-Hash outputs, in BTC'))
+        regularDustSizeLabel = QtWidgets.QLabel(tr('Value for dust Pay-to-Pubkey-Hash outputs, in GZR'))
         mainLayout.addWidget(regularDustSizeLabel)
         self.regularDustSize = QtWidgets.QDoubleSpinBox()
         self.regularDustSize.setDecimals(8)
@@ -384,7 +384,7 @@ class AdvancedConfigPage(QtWidgets.QWidget):
             self.regularDustSize.setValue(config.DEFAULT_REGULAR_DUST_SIZE / config.UNIT)
         mainLayout.addWidget(self.regularDustSize)
 
-        multisigDustSizeLabel = QtWidgets.QLabel(tr('Value for dust OP_CHECKMULTISIG outputs, in BTC'))
+        multisigDustSizeLabel = QtWidgets.QLabel(tr('Value for dust OP_CHECKMULTISIG outputs, in GZR'))
         mainLayout.addWidget(multisigDustSizeLabel)
         self.multisigDustSize = QtWidgets.QDoubleSpinBox()
         self.multisigDustSize.setDecimals(8)
@@ -396,7 +396,7 @@ class AdvancedConfigPage(QtWidgets.QWidget):
             self.multisigDustSize.setValue(config.DEFAULT_MULTISIG_DUST_SIZE / config.UNIT)
         mainLayout.addWidget(self.multisigDustSize)
 
-        opReturnValueLabel = QtWidgets.QLabel(tr('Value for OP_RETURN outputs, in BTC'))
+        opReturnValueLabel = QtWidgets.QLabel(tr('Value for OP_RETURN outputs, in GZR'))
         mainLayout.addWidget(opReturnValueLabel)
         self.opReturnValue = QtWidgets.QDoubleSpinBox()
         self.opReturnValue.setDecimals(8)

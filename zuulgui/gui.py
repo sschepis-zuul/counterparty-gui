@@ -25,13 +25,13 @@ from PyQt5.QtQml import QJSValue
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-import counterpartygui
-from counterpartygui.api import CounterpartydAPI, CounterpartydRPCError
-from counterpartygui.config import Config
-from counterpartycli.clientapi import ConfigurationError
-from counterpartylib.lib import log
+import zuulgui
+from zuulgui.api import ZuuldAPI, ZuuldRPCError
+from zuulgui.config import Config
+from zuulcli.clientapi import ConfigurationError
+from zuullib.lib import log
 
-from counterpartygui import tr
+from zuulgui import tr
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +80,8 @@ class GUI(QMainWindow):
         log.set_up(logger, verbose=config.VERBOSE, logfile=config.LOG_FILE)
 
         self.resize(1024, 680)
-        self.setWindowTitle(tr("Counterparty GUI"))
-        icon = QtGui.QIcon('assets/counterparty.icns')
+        self.setWindowTitle(tr("Zuul GUI"))
+        icon = QtGui.QIcon('assets/zuul.icns')
         self.setWindowIcon(icon)
         self.app.setWindowIcon(icon)
 
@@ -93,7 +93,7 @@ class GUI(QMainWindow):
         mainMenuBar = QMenuBar()
         newAct = QAction(tr("Preferences..."), self)
         newAct.triggered.connect(openPreference)
-        fileMenu = mainMenuBar.addMenu(tr("Counterparty GUI"))
+        fileMenu = mainMenuBar.addMenu(tr("Zuul GUI"))
         fileMenu.addAction(newAct)
         self.setMenuBar(mainMenuBar)
 
@@ -109,11 +109,11 @@ class GUI(QMainWindow):
 
     # init clientapi
     def initXcpApi(self):
-        if hasattr(self, 'xcpApi') and isinstance(self.xcpApi, CounterpartydAPI):
+        if hasattr(self, 'zulApi') and isinstance(self.zulApi, ZuuldAPI):
             return True
         else:
             try:
-                self.xcpApi = CounterpartydAPI(self.config)
+                self.zulApi = ZuuldAPI(self.config)
                 return True
             except ConfigurationError as e:
                 self.show()
@@ -128,19 +128,19 @@ class GUI(QMainWindow):
             return False
 
         try:
-            serverInfo = self.xcpApi.call({'method': 'get_running_info', 'params':[]}, return_dict=True)
+            serverInfo = self.zulApi.call({'method': 'get_running_info', 'params':[]}, return_dict=True)
 
-            counterpartyLastBlock = serverInfo['last_block']['block_index']
-            walletLastBlock = self.xcpApi.call({'method': 'wallet_last_block', 'params':{}}, return_dict=True)
+            zuulLastBlock = serverInfo['last_block']['block_index']
+            walletLastBlock = self.zulApi.call({'method': 'wallet_last_block', 'params':{}}, return_dict=True)
 
             message = 'Server Last Block: {} | Wallet Last Block: {}'
 
-            self.statusBar().showMessage(message.format(counterpartyLastBlock, walletLastBlock))
+            self.statusBar().showMessage(message.format(zuulLastBlock, walletLastBlock))
 
-            if self.currentBlock is not None and self.currentBlock != counterpartyLastBlock:
-                self.notifyPlugins('new_block', {'block_index': counterpartyLastBlock})
+            if self.currentBlock is not None and self.currentBlock != zuulLastBlock:
+                self.notifyPlugins('new_block', {'block_index': zuulLastBlock})
 
-            self.currentBlock = counterpartyLastBlock
+            self.currentBlock = zuulLastBlock
 
             return True
         # TODO
@@ -151,7 +151,7 @@ class GUI(QMainWindow):
                     self.splash.hide()
                 self.config.initialize(openDialog=True)
                 exit()
-            # else fails silently, error are already shown by `api.CounterpartydRPCError`
+            # else fails silently, error are already shown by `api.ZuuldRPCError`
             # and refreshStatus is executed each self.config.POLL_INTERVAL second
             return False
 
@@ -185,7 +185,7 @@ class GUI(QMainWindow):
             # add clientapi into the plugin context
             context = view.rootContext()
 
-            context.setContextProperty('xcpApi', self.xcpApi)
+            context.setContextProperty('zulApi', self.zulApi)
             context.setContextProperty('GUI', self)
 
             # load plugin translations if i18n subfolder exists
@@ -300,13 +300,13 @@ def main():
 
     if platform.system() == "Windows":
         import ctypes
-        appid = 'counterparty.counterparty-gui' # arbitrary string
+        appid = 'zuul.zuul-gui' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(appid)
     
     # load global translation
     translator = QtCore.QTranslator()
-    fileName = 'counterpartygui_'.format(QtCore.QLocale.system().name())
-    #fileName = 'counterpartygui_fr'
+    fileName = 'zuulgui_'.format(QtCore.QLocale.system().name())
+    #fileName = 'zuulgui_fr'
     translator.load(fileName, 'i18n')
     app.installTranslator(translator)
 
@@ -315,7 +315,7 @@ def main():
     splash.setMask(splash_pix.mask())
     splash.show()
     splash.showMessage(tr("Loading wallet..."), Qt.AlignBottom | Qt.AlignHCenter);
-    setattr(counterpartygui, 'splash', splash)
+    setattr(zuulgui, 'splash', splash)
     app.processEvents()
 
     config = Config(splash=splash)

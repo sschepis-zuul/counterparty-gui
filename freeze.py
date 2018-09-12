@@ -2,22 +2,22 @@ import os, sys, hashlib, shutil
 import ctypes.util
 from cx_Freeze import setup, Executable
 
-import counterpartygui
+import zuulgui
 
 # Check the presence, or update the path for folowing files
-COUNTERPARTYLIB_PATH = 'C:\\counterparty\\counterpartyd\\counterpartylib'
+ZUULLIB_PATH = 'C:\\zuul\\zuuld\\zuullib'
 CERTIFI_PEM_PATH = 'C:\\Python34\\Lib\\site-packages\\certifi-14.05.14-py3.4.egg\\certifi\\cacert.pem'
 QML_LIBS_PATH = 'C:\\Python34\\Lib\\site-packages\\PyQt5\\qml'
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
-    "excludes": ['counterpartylib'],
+    "excludes": ['zuullib'],
     "packages": [
         'PyQt5.QtNetwork',
         'colorlog',
         'apsw',
         'sha3',
-        'bitcoin',
+        'gozer',
         'logging',
         'flask',
         'flask_httpauth',
@@ -38,7 +38,7 @@ build_exe_options = {
         ("plugins", "plugins"),
         ("assets", "assets"),
         ("i18n", "i18n"),
-        (COUNTERPARTYLIB_PATH, "counterpartylib")
+        (ZUULLIB_PATH, "zuullib")
     ],
     "include_msvcr": True
 }
@@ -60,9 +60,9 @@ if sys.platform == "win32":
 shortcut_table = [(
     "DesktopShortcut",                  # Shortcut
     "DesktopFolder",                    # Directory_
-    "Counterparty GUI",                 # Name
+    "Zuul GUI",                 # Name
     "TARGETDIR",                        # Component_
-    "[TARGETDIR]counterparty-gui.exe",  # Target
+    "[TARGETDIR]zuul-gui.exe",  # Target
     None,                               # Arguments
     None,                               # Description
     None,                               # Hotkey
@@ -73,9 +73,9 @@ shortcut_table = [(
 ), (
     "ProgramMenuShortcut",              # Shortcut
     "ProgramMenuFolder",                # Directory_
-    "Counterparty GUI",                 # Name
+    "Zuul GUI",                 # Name
     "TARGETDIR",                        # Component_
-    "[TARGETDIR]counterparty-gui.exe",  # Target
+    "[TARGETDIR]zuul-gui.exe",  # Target
     None,                               # Arguments
     None,                               # Description
     None,                               # Hotkey
@@ -88,25 +88,25 @@ shortcut_table = [(
 bdist_msi_options = {'data': {"Shortcut": shortcut_table}}
     
 setup_options = {
-    'name': counterpartygui.APP_NAME,
-    'version': counterpartygui.APP_VERSION,
+    'name': zuulgui.APP_NAME,
+    'version': zuulgui.APP_VERSION,
     'options': {
         "build_exe": build_exe_options,
         "bdist_msi": bdist_msi_options
     },
-    'executables': [Executable("counterparty-gui.py", base=base, icon="assets/counterparty.ico")]
+    'executables': [Executable("zuul-gui.py", base=base, icon="assets/zuul.ico")]
 }
 
 setup(**setup_options)
 
 if sys.platform == "win32":
-    dist_path = 'dist/counterparty-gui-{}-amd64.msi'.format(counterpartygui.APP_VERSION)
-    new_dist_path = 'dist/counterparty-gui-{}-amd64-{}.msi'
+    dist_path = 'dist/zuul-gui-{}-amd64.msi'.format(zuulgui.APP_VERSION)
+    new_dist_path = 'dist/zuul-gui-{}-amd64-{}.msi'
 
 # Open,close, read file and calculate MD5 on its contents  
 with open(dist_path, 'rb') as dist_file:
     data = dist_file.read()    
     md5 = hashlib.md5(data).hexdigest()
 # Include the MD5 in the distribution filename
-new_dist_path = new_dist_path.format(counterpartygui.APP_VERSION + '-BETA', md5) # distutils does not support BETA
+new_dist_path = new_dist_path.format(zuulgui.APP_VERSION + '-BETA', md5) # distutils does not support BETA
 shutil.copy(dist_path, new_dist_path) # renaming raises a PermissionError (?)

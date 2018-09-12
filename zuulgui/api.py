@@ -11,11 +11,11 @@ from PyQt5.QtCore import QVariant
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMessageBox, QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtQml import QJSValue
-from counterpartycli import clientapi
-from counterpartycli.wallet import LockedWalletError
-from counterpartygui import tr
-from counterpartylib.lib import log
-import counterpartygui
+from zuulcli import clientapi
+from zuulcli.wallet import LockedWalletError
+from zuulgui import tr
+from zuullib.lib import log
+import zuulgui
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +27,10 @@ class DecimalEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 # TODO: display message box
-class CounterpartydRPCError(Exception):
+class ZuuldRPCError(Exception):
     def __init__(self, message):
-        if hasattr(counterpartygui, 'splash'):
-            counterpartygui.splash.hide()
+        if hasattr(zuulgui, 'splash'):
+            zuulgui.splash.hide()
         super().__init__(message)
         msgBox = QMessageBox()
         msgBox.setText(message)
@@ -76,13 +76,13 @@ def pubkeyResolver(address):
     message = tr('Public keys (hexadecimal) or Private key (Wallet Import Format) for `{}`: ').format(address)
     return InputDialog.input(message=message)
 
-class CounterpartydAPI(QObject):
+class ZuuldAPI(QObject):
     def __init__(self, config):
-        super(CounterpartydAPI, self).__init__()
+        super(ZuuldAPI, self).__init__()
         clientapi.initialize(testnet=config.TESTNET, testcoin=False,
-                            counterparty_rpc_connect=config.COUNTERPARTY_RPC_CONNECT, counterparty_rpc_port=config.COUNTERPARTY_RPC_PORT, 
-                            counterparty_rpc_user=config.COUNTERPARTY_RPC_USER, counterparty_rpc_password=config.COUNTERPARTY_RPC_PASSWORD,
-                            counterparty_rpc_ssl=config.COUNTERPARTY_RPC_SSL, counterparty_rpc_ssl_verify=config.COUNTERPARTY_RPC_SSL_VERIFY,
+                            zuul_rpc_connect=config.ZUUL_RPC_CONNECT, zuul_rpc_port=config.ZUUL_RPC_PORT, 
+                            zuul_rpc_user=config.ZUUL_RPC_USER, zuul_rpc_password=config.ZUUL_RPC_PASSWORD,
+                            zuul_rpc_ssl=config.ZUUL_RPC_SSL, zuul_rpc_ssl_verify=config.ZUUL_RPC_SSL_VERIFY,
                             wallet_name=config.WALLET_NAME, wallet_connect=config.WALLET_CONNECT, wallet_port=config.WALLET_PORT, 
                             wallet_user=config.WALLET_USER, wallet_password=config.WALLET_PASSWORD,
                             wallet_ssl=config.WALLET_SSL, wallet_ssl_verify=config.WALLET_SSL_VERIFY,
@@ -110,9 +110,9 @@ class CounterpartydAPI(QObject):
                 clientapi.call('unlock', {'passphrase': passphrase})
                 return self.call(query)
             except Exception as e:
-                raise CounterpartydRPCError(str(e))
+                raise ZuuldRPCError(str(e))
         except Exception as e:
-            raise CounterpartydRPCError(str(e))
+            raise ZuuldRPCError(str(e))
         
         # TODO: hack, find a real solution
         result = json.dumps(result, cls=DecimalEncoder)
